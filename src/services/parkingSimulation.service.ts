@@ -3,7 +3,6 @@ import { ParkingSpotModel } from '@models/parkingSpot.model';
 import { IParkingSpot, IParkingSpotSimulation } from '@interfaces/parkingSimulation.interface';
 import { SIMULATION_BACKEND_API_URL, SIMULATION_BACKEND_API_KEY } from '@config';
 import axios from 'axios';
-import * as console from 'console';
 import { ParkingSpotEventDto } from '@dtos/parkingSpotEvent.dto';
 import { ParkingSimulationEventModel } from '@models/parkingSimulationEvent.model';
 import { customDataDateOffset } from '@utils/customDataDateOffset';
@@ -11,15 +10,6 @@ import { customDataDateOffset } from '@utils/customDataDateOffset';
 class ParkingSimulationService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingSimulationEventsCollection = ParkingSimulationEventModel;
-
-  public async getParkingSpots(): Promise<IParkingSpot[]> {
-    try {
-      const data = await this.parkingSpotsCollection.find({}, { __v: 0 });
-    } catch (error) {
-      logger.error('Error retrieving parking spots:', error);
-      return undefined;
-    }
-  }
 
   public async fetchAndSaveParkingSpots(): Promise<void> {
     try {

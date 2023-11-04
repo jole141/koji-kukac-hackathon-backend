@@ -21,6 +21,9 @@ export const parkingSpotModelSchema: Schema = new Schema({
   occupiedTimestamp: {
     type: String,
   },
+  cluster: {
+    type: Object,
+  },
 });
 
 export const ParkingSpotModel = model<IParkingSpot & Document>('ParkingSpot', parkingSpotModelSchema);

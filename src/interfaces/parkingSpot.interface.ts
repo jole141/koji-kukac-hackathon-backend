@@ -7,13 +7,5 @@ export interface IParkingSpot {
   parkingSpotZone: string;
   occupied: boolean;
   occupiedTimestamp: string;
-  cluster?: IParkingCluster;
-}
-
-export type IParkingSpotSimulation = Omit<IParkingSpot, '_id'> & { id: string };
-
-export interface IParkingSpotEvent {
-  parkingSpotId: string;
-  occupied: boolean;
-  timestamp: string;
+  cluster: IParkingCluster;
 }
