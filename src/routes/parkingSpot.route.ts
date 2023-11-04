@@ -15,6 +15,7 @@ class ParkingSpotRoute implements Routes {
     this.router.get(`${this.path}`, this.parkingSpotController.getParkingSpots);
     this.router.delete(`${this.path}/:id`, this.parkingSpotController.deleteParkingSpot);
     this.router.post(`${this.path}/reserve`, this.parkingSpotController.reserveParkingSpot);
+    this.router.post(`${this.path}`, this.parkingSpotController.createParkingSpot);
   }
 }
 
