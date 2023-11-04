@@ -1,5 +1,5 @@
-import App from "@/app";
-import IndexRoute from "@routes/index.route";
+import App from '@/app';
+import IndexRoute from '@routes/index.route';
 
 const app = new App([new IndexRoute()]);
 

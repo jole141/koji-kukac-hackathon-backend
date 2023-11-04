@@ -1,6 +1,4 @@
-import { EXAMPLE_JOB_CRON_TIME } from "@/config";
-import { logger } from "@utils/logger";
-import { exampleJob } from "@/cron-jobs/example.job";
+import { logger } from '@utils/logger';
 
 export interface Jobs {
   [key: string]: {
@@ -14,7 +12,7 @@ const executeIfPreviousJobFinished = (job: () => Promise<void>) => {
   let isJobRunning = false;
   return async () => {
     if (isJobRunning) {
-      logger.info("Previous job is still running, skipping this execution");
+      logger.info('Previous job is still running, skipping this execution');
       return;
     }
     isJobRunning = true;
@@ -28,8 +26,8 @@ const executeIfPreviousJobFinished = (job: () => Promise<void>) => {
 };
 
 export const CronJobs: Jobs = {
-  exampleJob: {
-    cronTime: EXAMPLE_JOB_CRON_TIME,
-    execute: executeIfPreviousJobFinished(exampleJob),
-  },
+  // exampleJob: {
+  //   cronTime: EXAMPLE_JOB_CRON_TIME,
+  //   execute: executeIfPreviousJobFinished(exampleJob),
+  // },
 };

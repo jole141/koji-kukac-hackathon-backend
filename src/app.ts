@@ -12,15 +12,21 @@ import { logger, stream } from '@utils/logger';
 import { initDb } from './database';
 import cron from 'node-cron';
 import { CronJobs } from './cron-jobs/index.job';
+import { createServer } from 'node:http';
+import { Server } from 'socket.io';
+import { subscribeToParkingEvents } from '@/consumers/eventHubClient.consumer';
 
 class App {
+  public server: any;
   public app: express.Application;
+  public io: Server;
   public env: string;
   public port: string | number;
   public scheduledJobs: { [key: string]: cron.ScheduledTask } = {};
 
   constructor(routes: Routes[]) {
     this.app = express();
+    this.io = undefined;
     this.env = NODE_ENV;
     this.port = PORT;
 
@@ -32,9 +38,18 @@ class App {
   }
 
   public listen() {
-    this.app.listen(this.port, () => {
+    const server = createServer(this.app);
+    this.io = new Server(server);
+
+    this.io.on('connection', socket => {
+      logger.info(`Client connected: ${socket.id}`);
+    });
+
+    subscribeToParkingEvents(this.io);
+
+    server.listen(this.port, () => {
       logger.info(`=================================`);
-      logger.info(`======= ENV: ${this.env} =======`);
+      logger.info(`======= ENV: ${this.env} IO =======`);
       logger.info(`🚀 App listening on the port ${this.port}`);
       logger.info(`=================================`);
     });
