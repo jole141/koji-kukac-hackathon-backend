@@ -45,6 +45,21 @@ class ParkingClusterController {
       next(error);
     }
   };
+
+  public updateParkingClusterName = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = req.params.id;
+      const name = req.body.name;
+      const data = await this.parkingClusterService.updateParkingClusterName(id, name);
+      if (!data) {
+        res.status(500).json({ message: 'Internal server error' });
+        return;
+      }
+      res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default ParkingClusterController;

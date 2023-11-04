@@ -82,6 +82,8 @@ class ParkingClusterService {
     }
 
     const parkingCluster = {
+      name: parkingClusterCreateDto.name,
+      address: parkingClusterCreateDto.address,
       latitude: parkingClusterCreateDto.latitude,
       longitude: parkingClusterCreateDto.longitude,
       parkingClusterZone: parkingClusterCreateDto.parkingClusterZone,
@@ -97,6 +99,12 @@ class ParkingClusterService {
       await this.parkingSpotService.deleteParkingSpot(parkingSpot._id);
     }
     return this.parkingClusterCollection.findByIdAndDelete(id);
+  }
+
+  async updateParkingClusterName(id: string, name: any) {
+    const parkingCluster = await this.parkingClusterCollection.findById(id);
+    parkingCluster.name = name;
+    return this.parkingClusterCollection.findByIdAndUpdate(id, parkingCluster);
   }
 }
 

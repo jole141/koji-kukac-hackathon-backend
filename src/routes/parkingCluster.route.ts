@@ -15,6 +15,7 @@ class ParkingClusterRoute implements Routes {
     this.router.get(`${this.path}`, this.parkingClusterController.getParkingClusters);
     this.router.post(`${this.path}`, this.parkingClusterController.createParkingCluster);
     this.router.delete(`${this.path}/:id`, this.parkingClusterController.deleteParkingCluster);
+    this.router.patch(`${this.path}/:id`, this.parkingClusterController.updateParkingClusterName);
   }
 }
 
