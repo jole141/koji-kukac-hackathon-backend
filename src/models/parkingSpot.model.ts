@@ -22,7 +22,7 @@ export const parkingSpotModelSchema: Schema = new Schema({
     type: String,
   },
   cluster: {
-    type: Object,
+    type: String,
   },
 });
 

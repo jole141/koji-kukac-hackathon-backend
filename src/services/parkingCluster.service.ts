@@ -2,45 +2,42 @@ import { ParkingSpotModel } from '@models/parkingSpot.model';
 import { ParkingClusterModel } from '@models/parkingCluster.model';
 import { IParkingCluster } from '@interfaces/parkingCluster.interface';
 
-const { v4: uuidv4 } = require('uuid');
-
 class ParkingClusterService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
 
   public async initParkingClusters(): Promise<IParkingCluster[]> {
-    const parkingSpaces = await this.parkingSpotsCollection.find({});
+    let parkingSpots = await this.parkingSpotsCollection.find({});
 
-    parkingSpaces.forEach(parkingSpace => {
-      if (parkingSpace.cluster !== undefined) {
-        return;
+    for (let parkingSpot of parkingSpots) {
+      if (parkingSpot.cluster !== undefined) {
+        continue;
       }
-
-      const uuid = uuidv4();
       const parkingCluster = {
-        _id: uuid,
-        latitude: parkingSpace.latitude,
-        longitude: parkingSpace.longitude,
-        parkingClusterZone: parkingSpace.parkingSpotZone,
-        parkingSpots: [parkingSpace],
+        latitude: parkingSpot.latitude,
+        longitude: parkingSpot.longitude,
+        parkingClusterZone: parkingSpot.parkingSpotZone,
+        parkingSpots: [parkingSpot],
       };
-      parkingSpace.cluster = parkingCluster;
-      //this.parkingClusterCollection.create(parkingCluster);
+      const savedParkingCluster = await this.parkingClusterCollection.create(parkingCluster);
+      parkingSpot.cluster = savedParkingCluster._id;
+      await this.parkingSpotsCollection.findByIdAndUpdate(parkingSpot._id, { cluster: savedParkingCluster._id });
 
-      parkingSpaces.forEach(s => {
-        if (s.cluster !== undefined) {
-          return;
+      for (let parkingSpot1 of parkingSpots) {
+        if (parkingSpot1.cluster !== undefined || parkingSpot._id === parkingSpot1._id) {
+          continue;
         }
-        if (this.isInCluster(parkingSpace, s)) {
-          parkingSpace.cluster = uuid;
-          this.updateClusterCoordinates(uuid);
+        if (this.isInCluster(parkingCluster, parkingSpot1)) {
+          parkingSpot1.cluster = savedParkingCluster._id;
+          await this.parkingSpotsCollection.findByIdAndUpdate(parkingSpot1._id, { cluster: savedParkingCluster._id });
+          await this.updateClusterCoordinates(savedParkingCluster._id);
         }
-      });
-    });
+      }
+    }
     return undefined;
   }
 
-  public async updateClusterCoordinates(uuid: any) {
+  public async updateClusterCoordinates(uuid: string) {
     let longitudeSum = 0;
     let latitudeSum = 0;
     let count = 0;
@@ -52,9 +49,10 @@ class ParkingClusterService {
     });
     parkingCluster.longitude = longitudeSum / count;
     parkingCluster.latitude = latitudeSum / count;
-    parkingCluster.save();
+    await this.parkingClusterCollection.findByIdAndUpdate(parkingCluster._id, parkingCluster);
   }
-  private isInCluster(ps1, ps2) {
+
+  private isInCluster(ps1: any, ps2: any) {
     return Math.abs(ps1.latitude - ps2.latitude) * 111 < 50 && Math.abs(ps1.longitude - ps2.longitude) * 139 < 50;
   }
 }

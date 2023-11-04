@@ -25,5 +25,5 @@ async function fillDatabase() {
   const parkingSimulationService = new ParkingSimulationService();
   await parkingSimulationService.fetchAndSaveParkingSpots();
   const parkingClusterService = new ParkingClusterService();
-  //await parkingClusterService.initParkingClusters();
+  await parkingClusterService.initParkingClusters();
 }
