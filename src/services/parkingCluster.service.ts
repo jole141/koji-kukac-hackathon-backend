@@ -1,15 +1,16 @@
 import { ParkingSpotModel } from '@models/parkingSpot.model';
 import { ParkingClusterModel } from '@models/parkingCluster.model';
 import { IParkingCluster } from '@interfaces/parkingCluster.interface';
+import { haversine } from '@utils/util';
 
 class ParkingClusterService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
 
   public async initParkingClusters(): Promise<IParkingCluster[]> {
-    let parkingSpots = await this.parkingSpotsCollection.find({});
+    const parkingSpots = await this.parkingSpotsCollection.find({});
 
-    for (let parkingSpot of parkingSpots) {
+    for (const parkingSpot of parkingSpots) {
       if (parkingSpot.cluster !== undefined) {
         continue;
       }
@@ -22,14 +23,16 @@ class ParkingClusterService {
       const savedParkingCluster = await this.parkingClusterCollection.create(parkingCluster);
       parkingSpot.cluster = savedParkingCluster._id;
       await this.parkingSpotsCollection.findByIdAndUpdate(parkingSpot._id, { cluster: savedParkingCluster._id });
-
-      for (let parkingSpot1 of parkingSpots) {
+      for (const parkingSpot1 of parkingSpots) {
         if (parkingSpot1.cluster !== undefined || parkingSpot._id === parkingSpot1._id) {
           continue;
         }
         if (this.isInCluster(parkingCluster, parkingSpot1)) {
           parkingSpot1.cluster = savedParkingCluster._id;
           await this.parkingSpotsCollection.findByIdAndUpdate(parkingSpot1._id, { cluster: savedParkingCluster._id });
+          await this.parkingClusterCollection.findByIdAndUpdate(savedParkingCluster._id, {
+            $push: { parkingSpots: parkingSpot1 },
+          });
           await this.updateClusterCoordinates(savedParkingCluster._id);
         }
       }
@@ -53,7 +56,7 @@ class ParkingClusterService {
   }
 
   private isInCluster(ps1: any, ps2: any) {
-    return Math.abs(ps1.latitude - ps2.latitude) * 111 < 50 && Math.abs(ps1.longitude - ps2.longitude) * 139 < 50;
+    return haversine(ps1.latitude, ps1.longitude, ps2.latitude, ps2.longitude) < 50;
   }
 }
 
