@@ -1,4 +1,6 @@
 import { logger } from '@utils/logger';
+import { parkingOccupancyJob } from '@/cron-jobs/parkingOccupancy.job';
+import { OCCUPANCY_JOB_CRON_TIME } from '@/config';
 
 export interface Jobs {
   [key: string]: {
@@ -26,8 +28,8 @@ const executeIfPreviousJobFinished = (job: () => Promise<void>) => {
 };
 
 export const CronJobs: Jobs = {
-  // exampleJob: {
-  //   cronTime: EXAMPLE_JOB_CRON_TIME,
-  //   execute: executeIfPreviousJobFinished(exampleJob),
-  // },
+  parkingOccupancyJob: {
+    cronTime: OCCUPANCY_JOB_CRON_TIME,
+    execute: executeIfPreviousJobFinished(parkingOccupancyJob),
+  },
 };

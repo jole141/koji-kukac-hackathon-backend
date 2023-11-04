@@ -27,7 +27,7 @@ export function subscribeToParkingEvents(io: Server) {
             time: event.body.Time,
           };
           const parkingSimulationService = new ParkingSimulationService();
-          //await parkingSimulationService.updateParkingSpot(parkingEventDto);
+          await parkingSimulationService.updateParkingSpot(parkingEventDto);
 
           io.emit('ps', event.body);
         }

@@ -1,6 +1,6 @@
 import { logger } from '@utils/logger';
 import { ParkingSpotModel } from '@models/parkingSpot.model';
-import { IParkingSpot, IParkingSpotSimulation } from '@interfaces/parkingSimulation.interface';
+import { IParkingSpotSimulation } from '@interfaces/parkingSimulation.interface';
 import { SIMULATION_BACKEND_API_URL, SIMULATION_BACKEND_API_KEY } from '@config';
 import axios from 'axios';
 import { ParkingSpotEventDto } from '@dtos/parkingSpotEvent.dto';
@@ -37,8 +37,6 @@ class ParkingSimulationService {
     }
   }
 
-  //2023-11-04T12:46:49.5809172
-
   public async updateParkingSpot(parkingSpotEventDto: ParkingSpotEventDto): Promise<void> {
     try {
       await this.parkingSpotsCollection.findByIdAndUpdate(parkingSpotEventDto._id, {
@@ -50,11 +48,11 @@ class ParkingSimulationService {
       eventDate.setDate(eventDate.getDate() + offset);
       eventDate.setHours(parseInt(eventTime[0], 10));
       eventDate.setMinutes(parseInt(eventTime[1], 10));
-      await this.parkingSimulationEventsCollection.create({
-        parkingSpotId: parkingSpotEventDto._id,
-        occupied: parkingSpotEventDto.isOccupied,
-        timestamp: eventDate.toISOString(),
-      });
+      // await this.parkingSimulationEventsCollection.create({
+      //   parkingSpotId: parkingSpotEventDto._id,
+      //   occupied: parkingSpotEventDto.isOccupied,
+      //   timestamp: eventDate.toISOString(),
+      // });
       logger.info(`Parking spot ${parkingSpotEventDto._id} updated, occupied: ${parkingSpotEventDto.isOccupied}`);
     } catch (error) {
       logger.error('Error updating parking spot:', error);
