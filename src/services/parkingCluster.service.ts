@@ -4,10 +4,13 @@ import { IParkingCluster } from '@interfaces/parkingCluster.interface';
 import { haversine } from '@utils/util';
 import { ParkingClusterCreateDto } from '@dtos/parkingClusterCreate.dto';
 import { v4 as uuidv4 } from 'uuid';
+import ParkingSpotService from '@services/parkingSpot.service';
+import parkingSpotService from '@services/parkingSpot.service';
 class ParkingClusterService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
 
+  public parkingSpotService = new ParkingSpotService();
   public async getParkingClusters(): Promise<IParkingCluster[]> {
     return this.parkingClusterCollection.find();
   }
@@ -70,17 +73,12 @@ class ParkingClusterService {
   async createParkingCluster(parkingClusterCreateDto: ParkingClusterCreateDto) {
     const parkingSpots = [];
     for (let i = 0; i < parkingClusterCreateDto.numberOfParkingSpots; i++) {
-      const parkingSpot = {
-        _id: uuidv4(),
+      const parkingSpot = await this.parkingSpotService.createParkingSpot({
         latitude: parkingClusterCreateDto.latitude,
         longitude: parkingClusterCreateDto.longitude,
         parkingSpotZone: parkingClusterCreateDto.parkingClusterZone,
-        occupied: false,
-        occupiedTimestamp: null,
-      };
-      const savedParkingSpot = await this.parkingSpotsCollection.create(parkingSpot);
-      console.log(savedParkingSpot);
-      parkingSpots.push(savedParkingSpot);
+      });
+      parkingSpots.push(parkingSpot);
     }
 
     const parkingCluster = {
@@ -96,7 +94,7 @@ class ParkingClusterService {
   async deleteParkingCluster(id: string) {
     const parkingCluster = await this.parkingClusterCollection.findById(id);
     for (const parkingSpot of parkingCluster.parkingSpots) {
-      await this.parkingSpotsCollection.findByIdAndDelete(parkingSpot._id);
+      await this.parkingSpotService.deleteParkingSpot(parkingSpot._id);
     }
     return this.parkingClusterCollection.findByIdAndDelete(id);
   }
