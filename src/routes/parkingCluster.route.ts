@@ -13,6 +13,7 @@ class ParkingClusterRoute implements Routes {
 
   private initializeRoutes() {
     this.router.get(`${this.path}`, this.parkingClusterController.getParkingClusters);
+    this.router.get(`${this.path}/:id`, this.parkingClusterController.getParkingClusterById);
   }
 }
 
