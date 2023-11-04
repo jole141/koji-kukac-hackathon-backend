@@ -3,6 +3,7 @@ import { ParkingClusterModel } from '@models/parkingCluster.model';
 import { IParkingCluster } from '@interfaces/parkingCluster.interface';
 import { haversine } from '@utils/util';
 import { ObjectId } from 'mongodb';
+import { getAddressFromLongLat } from '@utils/getAddressFromLongLat';
 
 class ParkingClusterService {
   public parkingSpotsCollection = ParkingSpotModel;
@@ -92,9 +93,10 @@ class ParkingClusterService {
       if (parkingSpot.cluster !== undefined) {
         continue;
       }
-      // TODO: get address from google maps api
+      const address = await getAddressFromLongLat(parkingSpot.longitude, parkingSpot.latitude);
       const parkingCluster = {
         name: `Parking cluster ${parkingClustersNumber++}`,
+        address: address,
         latitude: parkingSpot.latitude,
         longitude: parkingSpot.longitude,
         parkingClusterZone: parkingSpot.parkingSpotZone,
