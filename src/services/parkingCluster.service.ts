@@ -7,10 +7,13 @@ import { getAddressFromLongLat } from '@utils/getAddressFromLongLat';
 
 import { ParkingClusterCreateDto } from '@dtos/parkingClusterCreate.dto';
 import { v4 as uuidv4 } from 'uuid';
+import ParkingSpotService from '@services/parkingSpot.service';
+import parkingSpotService from '@services/parkingSpot.service';
 class ParkingClusterService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
 
+  public parkingSpotService = new ParkingSpotService();
   public getParkingClusterById(id: string) {
     return this.parkingClusterCollection.aggregate([
       {
@@ -150,20 +153,17 @@ class ParkingClusterService {
   async createParkingCluster(parkingClusterCreateDto: ParkingClusterCreateDto) {
     const parkingSpots = [];
     for (let i = 0; i < parkingClusterCreateDto.numberOfParkingSpots; i++) {
-      const parkingSpot = {
-        _id: uuidv4(),
+      const parkingSpot = await this.parkingSpotService.createParkingSpot({
         latitude: parkingClusterCreateDto.latitude,
         longitude: parkingClusterCreateDto.longitude,
         parkingSpotZone: parkingClusterCreateDto.parkingClusterZone,
-        occupied: false,
-        occupiedTimestamp: null,
-      };
-      const savedParkingSpot = await this.parkingSpotsCollection.create(parkingSpot);
-      console.log(savedParkingSpot);
-      parkingSpots.push(savedParkingSpot);
+      });
+      parkingSpots.push(parkingSpot);
     }
 
     const parkingCluster = {
+      name: parkingClusterCreateDto.name,
+      address: parkingClusterCreateDto.address,
       latitude: parkingClusterCreateDto.latitude,
       longitude: parkingClusterCreateDto.longitude,
       parkingClusterZone: parkingClusterCreateDto.parkingClusterZone,
@@ -176,9 +176,15 @@ class ParkingClusterService {
   async deleteParkingCluster(id: string) {
     const parkingCluster = await this.parkingClusterCollection.findById(id);
     for (const parkingSpot of parkingCluster.parkingSpots) {
-      await this.parkingSpotsCollection.findByIdAndDelete(parkingSpot._id);
+      await this.parkingSpotService.deleteParkingSpot(parkingSpot._id);
     }
     return this.parkingClusterCollection.findByIdAndDelete(id);
+  }
+
+  async updateParkingClusterName(id: string, name: any) {
+    const parkingCluster = await this.parkingClusterCollection.findById(id);
+    parkingCluster.name = name;
+    return this.parkingClusterCollection.findByIdAndUpdate(id, parkingCluster);
   }
 }
 
