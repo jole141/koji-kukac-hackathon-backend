@@ -7,6 +7,10 @@ class ParkingClusterService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
 
+  public async getParkingClusters(): Promise<IParkingCluster[]> {
+    return this.parkingClusterCollection.find();
+  }
+
   public async initParkingClusters(): Promise<IParkingCluster[]> {
     const parkingSpots = await this.parkingSpotsCollection.find({});
 
