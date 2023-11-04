@@ -57,7 +57,6 @@ class ParkingSimulationService {
       const eventTime = parkingSpotEventDto.time.split(':');
       const eventDate = new Date(2023, 0, 1, 1, 0, 0, 0);
       const offset = customDataDateOffset();
-      console.log(offset);
       eventDate.setDate(eventDate.getDate() + offset);
       eventDate.setHours(parseInt(eventTime[0], 10));
       eventDate.setMinutes(parseInt(eventTime[1], 10));
