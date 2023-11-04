@@ -92,6 +92,14 @@ class ParkingClusterService {
 
     return await this.parkingClusterCollection.create(parkingCluster);
   }
+
+  async deleteParkingCluster(id: string) {
+    const parkingCluster = await this.parkingClusterCollection.findById(id);
+    for (const parkingSpot of parkingCluster.parkingSpots) {
+      await this.parkingSpotsCollection.findByIdAndDelete(parkingSpot._id);
+    }
+    return this.parkingClusterCollection.findByIdAndDelete(id);
+  }
 }
 
 export default ParkingClusterService;

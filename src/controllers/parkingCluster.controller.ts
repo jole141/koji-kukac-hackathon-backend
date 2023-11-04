@@ -31,6 +31,20 @@ class ParkingClusterController {
       next(error);
     }
   };
+
+  public deleteParkingCluster = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = req.params.id;
+      const data = await this.parkingClusterService.deleteParkingCluster(id);
+      if (!data) {
+        res.status(500).json({ message: 'Internal server error' });
+        return;
+      }
+      res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default ParkingClusterController;
