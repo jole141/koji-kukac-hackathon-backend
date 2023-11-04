@@ -2,7 +2,8 @@ import { ParkingSpotModel } from '@models/parkingSpot.model';
 import { ParkingClusterModel } from '@models/parkingCluster.model';
 import { IParkingCluster } from '@interfaces/parkingCluster.interface';
 import { haversine } from '@utils/util';
-
+import { ParkingClusterCreateDto } from '@dtos/parkingClusterCreate.dto';
+import { v4 as uuidv4 } from 'uuid';
 class ParkingClusterService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
@@ -59,8 +60,37 @@ class ParkingClusterService {
     await this.parkingClusterCollection.findByIdAndUpdate(parkingCluster._id, parkingCluster);
   }
 
-  private isInCluster(ps1: any, ps2: any) {
-    return haversine(ps1.latitude, ps1.longitude, ps2.latitude, ps2.longitude) < 50;
+  private isInCluster(parkingCluster: any, ps2: any) {
+    if (parkingCluster.parkingClusterZone !== ps2.parkingSpotZone) {
+      return false;
+    }
+    return haversine(parkingCluster.latitude, parkingCluster.longitude, ps2.latitude, ps2.longitude) < 50;
+  }
+
+  async createParkingCluster(parkingClusterCreateDto: ParkingClusterCreateDto) {
+    const parkingSpots = [];
+    for (let i = 0; i < parkingClusterCreateDto.numberOfParkingSpots; i++) {
+      const parkingSpot = {
+        _id: uuidv4(),
+        latitude: parkingClusterCreateDto.latitude,
+        longitude: parkingClusterCreateDto.longitude,
+        parkingSpotZone: parkingClusterCreateDto.parkingClusterZone,
+        occupied: false,
+        occupiedTimestamp: null,
+      };
+      const savedParkingSpot = await this.parkingSpotsCollection.create(parkingSpot);
+      console.log(savedParkingSpot);
+      parkingSpots.push(savedParkingSpot);
+    }
+
+    const parkingCluster = {
+      latitude: parkingClusterCreateDto.latitude,
+      longitude: parkingClusterCreateDto.longitude,
+      parkingClusterZone: parkingClusterCreateDto.parkingClusterZone,
+      parkingSpots: parkingSpots,
+    };
+
+    return await this.parkingClusterCollection.create(parkingCluster);
   }
 }
 
