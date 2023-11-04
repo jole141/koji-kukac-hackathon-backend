@@ -2,6 +2,9 @@ import { ParkingSpotModel } from '@models/parkingSpot.model';
 import { ParkingClusterModel } from '@models/parkingCluster.model';
 import { IParkingCluster } from '@interfaces/parkingCluster.interface';
 import { haversine } from '@utils/util';
+import { ObjectId } from 'mongodb';
+import { getAddressFromLongLat } from '@utils/getAddressFromLongLat';
+
 import { ParkingClusterCreateDto } from '@dtos/parkingClusterCreate.dto';
 import { v4 as uuidv4 } from 'uuid';
 import ParkingSpotService from '@services/parkingSpot.service';
@@ -11,22 +14,99 @@ class ParkingClusterService {
   public parkingClusterCollection = ParkingClusterModel;
 
   public parkingSpotService = new ParkingSpotService();
+  public getParkingClusterById(id: string) {
+    return this.parkingClusterCollection.aggregate([
+      {
+        $match: {
+          _id: new ObjectId(id),
+        },
+      },
+      {
+        $unwind: '$parkingSpots',
+      },
+      {
+        $group: {
+          _id: '$_id',
+          totalOccupied: { $sum: { $cond: { if: '$parkingSpots.occupied', then: 1, else: 0 } } },
+          totalSpots: { $sum: 1 },
+          hasAvailable: { $max: { $eq: ['$parkingSpots.occupied', false] } },
+          longitude: { $first: '$longitude' },
+          latitude: { $first: '$latitude' },
+          name: { $first: '$name' },
+          address: { $first: '$address' },
+          parkingClusterZone: { $first: '$parkingClusterZone' },
+          parkingSpots: { $push: '$parkingSpots' },
+          occupancy: { $first: '$occupancy' },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          occupancyPercentage: { $divide: ['$totalOccupied', '$totalSpots'] },
+          available: '$hasAvailable',
+          numOfAvailableSpots: { $subtract: ['$totalSpots', '$totalOccupied'] },
+          longitude: 1,
+          latitude: 1,
+          name: 1,
+          address: 1,
+          parkingClusterZone: 1,
+          parkingSpots: 1,
+          occupancy: 1,
+        },
+      },
+    ]);
+  }
+
   public async getParkingClusters(): Promise<IParkingCluster[]> {
-    return this.parkingClusterCollection.find();
+    return this.parkingClusterCollection.aggregate([
+      {
+        $unwind: '$parkingSpots',
+      },
+      {
+        $group: {
+          _id: '$_id',
+          totalOccupied: { $sum: { $cond: { if: '$parkingSpots.occupied', then: 1, else: 0 } } },
+          totalSpots: { $sum: 1 },
+          hasAvailable: { $max: { $eq: ['$parkingSpots.occupied', false] } },
+          longitude: { $first: '$longitude' },
+          latitude: { $first: '$latitude' },
+          name: { $first: '$name' },
+          address: { $first: '$address' },
+          parkingClusterZone: { $first: '$parkingClusterZone' },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          occupancyPercentage: { $divide: ['$totalOccupied', '$totalSpots'] },
+          available: '$hasAvailable',
+          numOfAvailableSpots: { $subtract: ['$totalSpots', '$totalOccupied'] },
+          longitude: 1,
+          latitude: 1,
+          name: 1,
+          address: 1,
+          parkingClusterZone: 1,
+        },
+      },
+    ]);
   }
 
   public async initParkingClusters(): Promise<IParkingCluster[]> {
     const parkingSpots = await this.parkingSpotsCollection.find({});
-
+    let parkingClustersNumber = 1;
     for (const parkingSpot of parkingSpots) {
       if (parkingSpot.cluster !== undefined) {
         continue;
       }
+      const address = await getAddressFromLongLat(parkingSpot.longitude, parkingSpot.latitude);
       const parkingCluster = {
+        name: `Parking cluster ${parkingClustersNumber++}`,
+        address: address,
         latitude: parkingSpot.latitude,
         longitude: parkingSpot.longitude,
         parkingClusterZone: parkingSpot.parkingSpotZone,
         parkingSpots: [parkingSpot],
+        occupancy: [],
       };
       const savedParkingCluster = await this.parkingClusterCollection.create(parkingCluster);
       parkingSpot.cluster = savedParkingCluster._id;

@@ -18,6 +18,20 @@ class ParkingClusterController {
     }
   };
 
+  public getParkingClusterById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = req.params.id;
+      const data = await this.parkingClusterService.getParkingClusterById(id);
+      if (!data) {
+        res.status(404).json({ message: 'Parking cluster not found' });
+        return;
+      }
+      res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public createParkingCluster = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const body = req.body as ParkingClusterCreateDto;
