@@ -6,10 +6,13 @@ import { ParkingSpotReserveDto } from '@dtos/parkingSpotReserve.dto';
 import axios from 'axios';
 import { SIMULATION_BACKEND_API_URL, SIMULATION_BACKEND_API_KEY } from '@config';
 import { ParkingSpotCreateDto } from '@dtos/parkingSpotCreate.dto';
+import { IUser } from '@interfaces/user.interface';
+import { UserModel } from '@models/user.model';
 
 class ParkingSpotService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
+  public userCollection = UserModel;
 
   public async getParkingSpots(): Promise<IParkingSpot[]> {
     return this.parkingSpotsCollection.find();
@@ -31,10 +34,31 @@ class ParkingSpotService {
     return this.parkingSpotsCollection.findByIdAndDelete(parkingSpot._id);
   }
 
-  async reserveParkingSpot(parkingSpotReserveDto: ParkingSpotReserveDto) {
+  async reserveParkingSpot(parkingSpotReserveDto: ParkingSpotReserveDto, user) {
     const parkingSpot = await this.parkingSpotsCollection.findById(parkingSpotReserveDto._id);
     if (parkingSpot.occupied) {
       return false;
+    }
+
+    const currentHours = new Date().getHours();
+    const currentMinutes = new Date().getMinutes();
+    if (parkingSpotReserveDto.h < currentHours || (parkingSpotReserveDto.h === currentHours && parkingSpotReserveDto.m < currentMinutes)) {
+      return false;
+    }
+    const count = parkingSpotReserveDto.h - currentHours * 60 + parkingSpotReserveDto.m - currentMinutes + 29 / 30;
+
+    const parkingCluster = await this.parkingClusterCollection.findById(parkingSpot.cluster);
+
+    if (user.balance < count * parkingCluster.pricePerHour) {
+      return false;
+    } else {
+      try {
+        await this.userCollection.findByIdAndUpdate(user._id, {
+          $dec: { balance: count * parkingCluster.pricePerHour },
+        });
+      } catch (e) {
+        return false;
+      }
     }
 
     const url = new URL('./ParkingSpot/reserve', SIMULATION_BACKEND_API_URL).toString();
