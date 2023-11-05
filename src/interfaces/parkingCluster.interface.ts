@@ -6,5 +6,6 @@ export interface IParkingCluster {
   latitude: number;
   longitude: number;
   parkingClusterZone: string;
+  pricePerHour: number;
   parkingSpots: IParkingSpot[];
 }

@@ -6,9 +6,23 @@ import { ObjectId } from 'mongodb';
 import { getAddressFromLongLat } from '@utils/getAddressFromLongLat';
 
 import { ParkingClusterCreateDto } from '@dtos/parkingClusterCreate.dto';
-import { v4 as uuidv4 } from 'uuid';
 import ParkingSpotService from '@services/parkingSpot.service';
-import parkingSpotService from '@services/parkingSpot.service';
+
+function getPricePerHour(parkingSpotZone: string) {
+  switch (parkingSpotZone) {
+    case 'Zone1':
+      return 2;
+    case 'Zone2':
+      return 1.5;
+    case 'Zone3':
+      return 1;
+    case 'Zone4':
+      return 0.5;
+    default:
+      return 0;
+  }
+}
+
 class ParkingClusterService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
@@ -35,6 +49,7 @@ class ParkingClusterService {
           name: { $first: '$name' },
           address: { $first: '$address' },
           parkingClusterZone: { $first: '$parkingClusterZone' },
+          pricePerHour: { $first: '$pricePerHour' },
           parkingSpots: { $push: '$parkingSpots' },
           occupancy: { $first: '$occupancy' },
         },
@@ -50,6 +65,7 @@ class ParkingClusterService {
           name: 1,
           address: 1,
           parkingClusterZone: 1,
+          pricePerHour: 1,
           parkingSpots: 1,
           occupancy: 1,
         },
@@ -72,6 +88,7 @@ class ParkingClusterService {
           latitude: { $first: '$latitude' },
           name: { $first: '$name' },
           address: { $first: '$address' },
+          pricePerHour: { $first: '$pricePerHour' },
           parkingClusterZone: { $first: '$parkingClusterZone' },
         },
       },
@@ -85,6 +102,7 @@ class ParkingClusterService {
           latitude: 1,
           name: 1,
           address: 1,
+          pricePerHour: 1,
           parkingClusterZone: 1,
         },
       },
@@ -105,6 +123,7 @@ class ParkingClusterService {
         latitude: parkingSpot.latitude,
         longitude: parkingSpot.longitude,
         parkingClusterZone: parkingSpot.parkingSpotZone,
+        pricePerHour: getPricePerHour(parkingSpot.parkingSpotZone),
         parkingSpots: [parkingSpot],
         occupancy: [],
       };

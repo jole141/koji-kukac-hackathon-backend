@@ -21,6 +21,10 @@ const parkingClusterModelSchema: Schema = new Schema({
   parkingClusterZone: {
     type: String,
   },
+  pricePerHour: {
+    type: Number,
+    required: true,
+  },
   parkingSpots: [{ type: parkingSpotModelSchema }],
   occupancy: [
     {
