@@ -207,6 +207,7 @@ class ParkingClusterService {
       longitude: parkingClusterCreateDto.longitude,
       parkingClusterZone: parkingClusterCreateDto.parkingClusterZone,
       parkingSpots: parkingSpots,
+      pricePerHour: getPricePerHour(parkingClusterCreateDto.parkingClusterZone),
       dynamicPricing: parkingClusterCreateDto.dynamicPricing,
       priceIncreaseThreshold: parkingClusterCreateDto.priceIncreaseThreshold,
       priceIncreaseAmount: parkingClusterCreateDto.priceIncreaseAmount,
