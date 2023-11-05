@@ -8,4 +8,8 @@ export interface IParkingCluster {
   parkingClusterZone: string;
   pricePerHour: number;
   parkingSpots: IParkingSpot[];
+  dynamicPricing: boolean;
+  priceIncreaseThreshold: number;
+  priceIncreaseAmount: number;
+  priceIncreaseInterval: number;
 }

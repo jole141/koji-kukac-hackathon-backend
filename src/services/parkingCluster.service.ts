@@ -23,6 +23,20 @@ function getPricePerHour(parkingSpotZone: string) {
   }
 }
 
+function calculateDynamicPrice(parkingCluster: any) {
+  if (!parkingCluster.dynamicPricing) {
+    return parkingCluster.pricePerHour;
+  }
+  const occupancyPercentage = parkingCluster.occupancyPercentage;
+  if (occupancyPercentage < parkingCluster.priceIncreaseThreshold) {
+    return parkingCluster.pricePerHour;
+  }
+  const priceIncreaseAmount = parkingCluster.priceIncreaseAmount;
+  const priceIncreaseInterval = parkingCluster.priceIncreaseInterval;
+  const priceIncreasePercentage = (occupancyPercentage - parkingCluster.priceIncreaseThreshold) / priceIncreaseInterval;
+  return parkingCluster.pricePerHour * (1 + priceIncreasePercentage * priceIncreaseAmount);
+}
+
 class ParkingClusterService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
@@ -74,7 +88,7 @@ class ParkingClusterService {
   }
 
   public async getParkingClusters(): Promise<IParkingCluster[]> {
-    return this.parkingClusterCollection.aggregate([
+    const parkingClusters: IParkingCluster[] = await this.parkingClusterCollection.aggregate([
       {
         $unwind: '$parkingSpots',
       },
@@ -107,6 +121,10 @@ class ParkingClusterService {
         },
       },
     ]);
+    parkingClusters.forEach(parkingCluster => {
+      parkingCluster.pricePerHour = calculateDynamicPrice(parkingCluster);
+    });
+    return parkingClusters;
   }
 
   public async initParkingClusters(): Promise<IParkingCluster[]> {
@@ -187,6 +205,10 @@ class ParkingClusterService {
       longitude: parkingClusterCreateDto.longitude,
       parkingClusterZone: parkingClusterCreateDto.parkingClusterZone,
       parkingSpots: parkingSpots,
+      dynamicPricing: parkingClusterCreateDto.dynamicPricing,
+      priceIncreaseThreshold: parkingClusterCreateDto.priceIncreaseThreshold,
+      priceIncreaseAmount: parkingClusterCreateDto.priceIncreaseAmount,
+      priceIncreaseInterval: parkingClusterCreateDto.priceIncreaseInterval,
     };
 
     return await this.parkingClusterCollection.create(parkingCluster);

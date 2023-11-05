@@ -5,4 +5,8 @@ export class ParkingClusterCreateDto {
   public longitude: number;
   public parkingClusterZone: string;
   public numberOfParkingSpots: number;
+  public dynamicPricing: boolean;
+  public priceIncreaseThreshold: number;
+  public priceIncreaseAmount: number;
+  public priceIncreaseInterval: number;
 }
