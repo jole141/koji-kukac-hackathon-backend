@@ -22,6 +22,7 @@ const validateEnv = () => {
     INITIAL_DAY: str({ devDefault: '2023-11-04T20:00:00Z' }),
     MAP_BOX_API_KEY: str({ devDefault: 'dev' }),
     OCCUPANCY_JOB_CRON_TIME: str({ devDefault: '*/1 * * * *' }),
+    JWT_SECRET: str({ devDefault: 'secret-secret' }),
   });
 };
 
