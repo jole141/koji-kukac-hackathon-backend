@@ -8,10 +8,12 @@ import { SIMULATION_BACKEND_API_URL, SIMULATION_BACKEND_API_KEY } from '@config'
 import { ParkingSpotCreateDto } from '@dtos/parkingSpotCreate.dto';
 import { IUser } from '@interfaces/user.interface';
 import { UserModel } from '@models/user.model';
+import ParkingSimulationService from '@services/parkingSimulation.service';
 
 class ParkingSpotService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingClusterCollection = ParkingClusterModel;
+  public parkingSimulationService = new ParkingSimulationService();
   public userCollection = UserModel;
 
   public async getParkingSpots(): Promise<IParkingSpot[]> {
@@ -35,56 +37,51 @@ class ParkingSpotService {
   }
 
   async reserveParkingSpot(parkingSpotReserveDto: ParkingSpotReserveDto, user) {
-    const parkingSpot = await this.parkingSpotsCollection.findById(parkingSpotReserveDto._id);
-    if (parkingSpot.occupied) {
-      return false;
-    }
-
     const currentHours = new Date().getHours();
+    console.log(currentHours);
     const currentMinutes = new Date().getMinutes();
+    console.log(currentMinutes);
+
     if (parkingSpotReserveDto.h < currentHours || (parkingSpotReserveDto.h === currentHours && parkingSpotReserveDto.m < currentMinutes)) {
       return false;
     }
-    const count = parkingSpotReserveDto.h - currentHours * 60 + parkingSpotReserveDto.m - currentMinutes + 29 / 30;
+    const count = parkingSpotReserveDto.h - currentHours;
 
-    const parkingCluster = await this.parkingClusterCollection.findById(parkingSpot.cluster);
+    const parkingCluster = await this.parkingClusterCollection.findById(parkingSpotReserveDto._id);
 
     if (user.balance < count * parkingCluster.pricePerHour) {
       return false;
-    } else {
-      try {
-        await this.userCollection.findByIdAndUpdate(user._id, {
-          $dec: { balance: count * parkingCluster.pricePerHour },
+    }
+
+    for (const parkingSpot of parkingCluster.parkingSpots) {
+      if (!parkingSpot.occupied) {
+        const requestBody = {
+          _id: parkingSpot._id,
+          isOccupied: true,
+          time: `${parkingSpotReserveDto.h}:${parkingSpotReserveDto.m}`,
+        };
+        /*await this.userCollection.findByIdAndUpdate(user._id, {
+          $inc: { balance: -count * parkingCluster.pricePerHour },
         });
-      } catch (e) {
-        return false;
+        const url = new URL('./ParkingSpot/reserve', SIMULATION_BACKEND_API_URL).toString();
+        console.log(url);
+        const res = await axios.post(url, requestBody, {
+          headers: {
+            accept: 'application/json',
+            'Api-Key': SIMULATION_BACKEND_API_KEY,
+          },
+        });
+
+        if (res.status !== 200) {
+          return false;
+        }*/
+        await this.parkingSimulationService.updateParkingSpot(requestBody);
+        parkingSpot.occupied = true;
+        parkingSpot.occupiedTimestamp = new Date().setHours(parkingSpotReserveDto.h, parkingSpotReserveDto.m, 0, 0).toString();
+
+        return this.parkingSpotsCollection.findByIdAndUpdate(parkingSpot._id, parkingSpot);
       }
     }
-
-    const url = new URL('./ParkingSpot/reserve', SIMULATION_BACKEND_API_URL).toString();
-    const res = await axios.post(
-      url,
-      {
-        id: parkingSpot._id,
-        h: parkingSpotReserveDto.h,
-        m: parkingSpotReserveDto.m,
-      },
-      {
-        headers: {
-          accept: 'application/json',
-          'Api-Key': SIMULATION_BACKEND_API_KEY,
-        },
-      },
-    );
-
-    if (res.status !== 200) {
-      return false;
-    }
-
-    parkingSpot.occupied = true;
-    parkingSpot.occupiedTimestamp = new Date().setHours(parkingSpotReserveDto.h, parkingSpotReserveDto.m, 0, 0).toString();
-
-    return this.parkingSpotsCollection.findByIdAndUpdate(parkingSpot._id, parkingSpot);
   }
 
   public async createParkingSpot(parkingSpotCreateDto: ParkingSpotCreateDto) {

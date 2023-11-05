@@ -8,9 +8,9 @@ export const dbConnection = {
 };
 
 export async function initDb(): Promise<boolean> {
-  if (NODE_ENV === 'development') {
+  /*if (NODE_ENV === 'development') {
     set('debug', true);
-  }
+  }*/
 
   await connect(dbConnection.url, {
     dbName: DB_NAME,
