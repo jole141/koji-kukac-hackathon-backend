@@ -1,8 +1,8 @@
-import { CarType, IUser } from '@interfaces/user.interface';
+import { IUser } from '@interfaces/user.interface';
 import { UserModel } from '@models/user.model';
 import { BalanceDto } from '@dtos/balance.dto';
-import { CarDeleteDto } from '@dtos/carDelete.dto';
 import { CarCreateDto } from '@dtos/carCreate.dto';
+import { logger } from '@utils/logger';
 
 class UserService {
   public userCollection = UserModel;
@@ -15,20 +15,19 @@ class UserService {
     }
   }
 
-  async addBalance(id: string, balance: BalanceDto) {
+  public async addBalance(id: string, balance: BalanceDto) {
     try {
-      const user = await this.userCollection.findById(id);
-      if (!user) {
-        return null;
-      }
-      user.balance += balance.balance;
-      return this.userCollection.findByIdAndUpdate(id, user);
+      await this.userCollection.findByIdAndUpdate(id, {
+        $inc: { balance: balance.balance },
+      });
+      return true;
     } catch (error) {
-      throw error;
+      logger.error(error);
+      return false;
     }
   }
 
-  async deductBalance(id: string, balance: BalanceDto) {
+  public async deductBalance(id: string, balance: BalanceDto) {
     try {
       const user = await this.userCollection.findById(id);
       if (!user) {
@@ -44,35 +43,19 @@ class UserService {
     }
   }
 
-  async removeCar(id: string, car: CarDeleteDto) {
-    try {
-      const user = await this.userCollection.findById(id);
-      if (!user) {
-        return null;
-      }
-      user.cars = user.cars.filter(c => c.licensePlate !== car.licensePlate);
-      return this.userCollection.findByIdAndUpdate(id, user);
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async addCar(id: string, carCreateDto: CarCreateDto) {
-    const car = {
-      licensePlate: carCreateDto.licensePlate,
-      brand: carCreateDto.brand,
-      model: carCreateDto.model,
-      type: CarType[carCreateDto.type],
-    };
     try {
       const user = await this.userCollection.findById(id);
       if (!user) {
-        return null;
+        return false;
       }
-      user.cars.push(car);
-      return this.userCollection.findByIdAndUpdate(id, user);
+      await this.userCollection.findByIdAndUpdate(id, {
+        $push: { cars: carCreateDto },
+      });
+      return true;
     } catch (error) {
-      throw error;
+      logger.error(error);
+      return false;
     }
   }
 }

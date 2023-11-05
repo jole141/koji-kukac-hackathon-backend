@@ -9,14 +9,11 @@ export interface IUser {
 }
 
 export interface ICars {
-  licensePlate: string;
-  brand: string;
+  make: string;
   model: string;
-  type: CarType;
-}
-
-export enum CarType {
-  Sedan = 'Sedan',
-  Coupe = 'Coupe',
-  SUV = 'SUV',
+  city: string;
+  numbers: string;
+  text: string;
+  color: string;
+  type: 'sedan' | 'coupe' | 'suv';
 }

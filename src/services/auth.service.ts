@@ -37,7 +37,7 @@ class AuthService {
   public whoAmI = async (token: string): Promise<any> => {
     try {
       const { user } = jwt.verify(token, JWT_SECRET) as any;
-      return await this.userCollection.findOne({ username: user.username }, { password: 0, _id: 0, __v: 0 });
+      return await this.userCollection.findOne({ username: user.username }, { password: 0, __v: 0 });
     } catch (error) {
       logger.error(error);
     }
