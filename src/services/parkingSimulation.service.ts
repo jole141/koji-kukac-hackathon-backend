@@ -42,7 +42,7 @@ class ParkingSimulationService {
   public async updateParkingSpot(parkingSpotEventDto: ParkingSpotEventDto): Promise<void> {
     try {
       await this.parkingSpotsCollection.findByIdAndUpdate(parkingSpotEventDto._id, {
-        isOccupied: parkingSpotEventDto.isOccupied,
+        occupied: parkingSpotEventDto.isOccupied,
       });
       const data = await this.parkingSpotsCollection.findById(parkingSpotEventDto._id);
       const clusterID = data.cluster;
@@ -50,7 +50,7 @@ class ParkingSimulationService {
         { _id: clusterID, 'parkingSpots._id': parkingSpotEventDto._id },
         {
           $set: {
-            'parkingSpots.$.isOccupied': parkingSpotEventDto.isOccupied,
+            'parkingSpots.$.occupied': parkingSpotEventDto.isOccupied,
           },
         },
       );
