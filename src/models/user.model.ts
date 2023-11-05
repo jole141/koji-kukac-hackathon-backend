@@ -31,4 +31,4 @@ const userModelSchema: Schema = new Schema({
   ],
 });
 
-export const UserModel = model<IUser & Document>('ParkingCluster', userModelSchema);
+export const UserModel = model<IUser & Document>('User', userModelSchema);

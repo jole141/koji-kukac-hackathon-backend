@@ -19,9 +19,10 @@ const validateEnv = () => {
     EVENT_HUB_CONNECTION_STRING: str({ devDefault: 'dev' }),
     SIMULATION_BACKEND_API_URL: str({ devDefault: 'localhost:3000' }),
     SIMULATION_BACKEND_API_KEY: str({ devDefault: 'dev' }),
-    INITIAL_DAY: str({ devDefault: '2023-11-04T20:00:00Z' }),
+    INITIAL_DAY: str({ devDefault: '2023-11-05T02:00:00Z' }),
     MAP_BOX_API_KEY: str({ devDefault: 'dev' }),
     OCCUPANCY_JOB_CRON_TIME: str({ devDefault: '*/1 * * * *' }),
+    JWT_SECRET: str({ devDefault: 'secret-secret' }),
   });
 };
 
