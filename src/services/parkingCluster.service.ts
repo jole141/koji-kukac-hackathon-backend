@@ -7,6 +7,7 @@ import { getAddressFromLongLat } from '@utils/getAddressFromLongLat';
 
 import { ParkingClusterCreateDto } from '@dtos/parkingClusterCreate.dto';
 import ParkingSpotService from '@services/parkingSpot.service';
+import { DynamicPricingParametersDto } from '@dtos/dynamicPricingParameters.dto';
 
 function getPricePerHour(parkingSpotZone: string) {
   switch (parkingSpotZone) {
@@ -43,7 +44,7 @@ class ParkingClusterService {
 
   public parkingSpotService = new ParkingSpotService();
   public getParkingClusterById(id: string) {
-    return this.parkingClusterCollection.aggregate([
+    const parkingCluster: any = this.parkingClusterCollection.aggregate([
       {
         $match: {
           _id: new ObjectId(id),
@@ -85,6 +86,8 @@ class ParkingClusterService {
         },
       },
     ]);
+    parkingCluster.pricePerHour = calculateDynamicPrice(parkingCluster);
+    return parkingCluster;
   }
 
   public async getParkingClusters(): Promise<IParkingCluster[]> {
@@ -197,7 +200,6 @@ class ParkingClusterService {
       });
       parkingSpots.push(parkingSpot);
     }
-
     const parkingCluster = {
       name: parkingClusterCreateDto.name,
       address: parkingClusterCreateDto.address,
@@ -211,7 +213,9 @@ class ParkingClusterService {
       priceIncreaseInterval: parkingClusterCreateDto.priceIncreaseInterval,
     };
 
-    return await this.parkingClusterCollection.create(parkingCluster);
+    const newParkingCluster: any = this.parkingClusterCollection.create(parkingCluster);
+    newParkingCluster.pricePerHour = calculateDynamicPrice(newParkingCluster);
+    return newParkingCluster;
   }
 
   async deleteParkingCluster(id: string) {
@@ -225,7 +229,21 @@ class ParkingClusterService {
   async updateParkingClusterName(id: string, name: any) {
     const parkingCluster = await this.parkingClusterCollection.findById(id);
     parkingCluster.name = name;
-    return this.parkingClusterCollection.findByIdAndUpdate(id, parkingCluster);
+    const newParkingCluster: any = this.parkingClusterCollection.findByIdAndUpdate(id, parkingCluster);
+    newParkingCluster.pricePerHour = calculateDynamicPrice(newParkingCluster);
+    return newParkingCluster;
+  }
+
+  async updateDynamicPricingParameters(id: string, dynamicPricingParameters: DynamicPricingParametersDto) {
+    const parkingCluster = await this.parkingClusterCollection.findById(id);
+    parkingCluster.dynamicPricing = dynamicPricingParameters.dynamicPricing;
+    parkingCluster.priceIncreaseThreshold = dynamicPricingParameters.priceIncreaseThreshold;
+    parkingCluster.priceIncreaseAmount = dynamicPricingParameters.priceIncreaseAmount;
+    parkingCluster.priceIncreaseInterval = dynamicPricingParameters.priceIncreaseInterval;
+
+    const newParkingCluster: any = this.parkingClusterCollection.findByIdAndUpdate(id, parkingCluster);
+    newParkingCluster.pricePerHour = calculateDynamicPrice(newParkingCluster);
+    return newParkingCluster;
   }
 }
 
