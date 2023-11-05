@@ -6,10 +6,12 @@ import axios from 'axios';
 import { ParkingSpotEventDto } from '@dtos/parkingSpotEvent.dto';
 import { ParkingSimulationEventModel } from '@models/parkingSimulationEvent.model';
 import { customDataDateOffset } from '@utils/customDataDateOffset';
+import { ParkingClusterModel } from '@models/parkingCluster.model';
 
 class ParkingSimulationService {
   public parkingSpotsCollection = ParkingSpotModel;
   public parkingSimulationEventsCollection = ParkingSimulationEventModel;
+  public parkingClustersCollection = ParkingClusterModel;
 
   public async fetchAndSaveParkingSpots(): Promise<void> {
     try {
@@ -41,6 +43,16 @@ class ParkingSimulationService {
     try {
       await this.parkingSpotsCollection.findByIdAndUpdate(parkingSpotEventDto._id, {
         isOccupied: parkingSpotEventDto.isOccupied,
+      });
+      const data = await this.parkingSpotsCollection.findById(parkingSpotEventDto._id);
+      const clusterID = data.cluster;
+      await this.parkingClustersCollection.findByIdAndUpdate(clusterID, {
+        $set: {
+          parkingSpots: {
+            _id: parkingSpotEventDto._id,
+            isOccupied: parkingSpotEventDto.isOccupied,
+          },
+        },
       });
       const eventTime = parkingSpotEventDto.time.split(':');
       const eventDate = new Date(2023, 0, 1, 1, 0, 0, 0);
