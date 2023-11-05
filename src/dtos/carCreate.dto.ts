@@ -1,6 +1,9 @@
 export class CarCreateDto {
-  public licensePlate: string;
-  public brand: string;
+  public make: string;
   public model: string;
-  public type: string;
+  public city: string;
+  public numbers: string;
+  public text: string;
+  public color: string;
+  public type: 'sedan' | 'coupe' | 'suv';
 }

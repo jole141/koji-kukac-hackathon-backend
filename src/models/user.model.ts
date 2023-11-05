@@ -11,22 +11,42 @@ const userModelSchema: Schema = new Schema({
   },
   email: {
     type: String,
+    unique: true,
   },
   username: {
     type: String,
+    unique: true,
   },
   password: {
     type: String,
   },
   balance: {
     type: Number,
+    default: 0,
   },
   cars: [
     {
-      licensePlate: String,
-      brand: String,
-      model: String,
-      type: String,
+      make: {
+        type: String,
+      },
+      model: {
+        type: String,
+      },
+      city: {
+        type: String,
+      },
+      numbers: {
+        type: String,
+      },
+      text: {
+        type: String,
+      },
+      color: {
+        type: String,
+      },
+      type: {
+        type: String,
+      },
     },
   ],
 });
