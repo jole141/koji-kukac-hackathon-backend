@@ -4,11 +4,13 @@ import bcrypt from 'bcrypt';
 import { logger } from '@utils/logger';
 import { UserLoginDto } from '@dtos/userLogin.dto';
 import { IAuthorizationToken } from '@interfaces/auth.interface';
-import { JWT_SECRET } from '@config';
+import { JWT_SECRET, JWT_SECRET_ADMIN } from '@config';
 import jwt from 'jsonwebtoken';
+import { AdminUserModel } from '@models/adminUser.model';
 
 class AuthService {
   public userCollection = UserModel;
+  public adminUserCollection = AdminUserModel;
 
   public login = async (loginDto: UserLoginDto): Promise<IAuthorizationToken> => {
     const { username, password } = loginDto;
@@ -27,6 +29,30 @@ class AuthService {
       const hashedPassword = await this.hashPassword(password);
 
       await this.userCollection.create({ ...rest, password: hashedPassword });
+      return true;
+    } catch (error) {
+      logger.error(error);
+      return false;
+    }
+  };
+
+  public adminLogin = async (loginDto: UserLoginDto): Promise<IAuthorizationToken> => {
+    const { username, password } = loginDto;
+    const user = await this.adminUserCollection.findOne({ username });
+    if (!user) throw new Error('Invalid credentials');
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) throw new Error('Invalid credentials');
+    return {
+      token: jwt.sign({ user }, JWT_SECRET_ADMIN, { expiresIn: '24h' }),
+    };
+  };
+
+  public adminRegister = async (registerDto: UserRegisterDto): Promise<boolean> => {
+    try {
+      const { password, ...rest } = registerDto;
+      const hashedPassword = await this.hashPassword(password);
+
+      await this.adminUserCollection.create({ ...rest, password: hashedPassword });
       return true;
     } catch (error) {
       logger.error(error);

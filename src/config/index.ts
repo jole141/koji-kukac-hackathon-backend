@@ -23,6 +23,7 @@ const validateEnv = () => {
     MAP_BOX_API_KEY: str({ devDefault: 'dev' }),
     OCCUPANCY_JOB_CRON_TIME: str({ devDefault: '*/1 * * * *' }),
     JWT_SECRET: str({ devDefault: 'secret-secret' }),
+    JWT_SECRET_ADMIN: str({ devDefault: 'secret-secret-admin' }),
   });
 };
 
