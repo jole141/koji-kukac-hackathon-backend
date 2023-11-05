@@ -6,7 +6,6 @@ import { ParkingSpotReserveDto } from '@dtos/parkiongSpotReserve.dto';
 import axios from 'axios';
 import { SIMULATION_BACKEND_API_URL, SIMULATION_BACKEND_API_KEY } from '@config';
 import { ParkingSpotCreateDto } from '@dtos/parkingSpotCreate.dto';
-import parkingSpotController from '@controllers/parkingSpot.controller';
 
 class ParkingSpotService {
   public parkingSpotsCollection = ParkingSpotModel;
@@ -39,17 +38,20 @@ class ParkingSpotService {
     }
 
     const url = new URL('./ParkingSpot/reserve', SIMULATION_BACKEND_API_URL).toString();
-    const res = await axios.post(url, {
-      headers: {
-        accept: 'application/json',
-        'Api-Key': SIMULATION_BACKEND_API_KEY,
-      },
-      data: {
+    const res = await axios.post(
+      url,
+      {
         id: parkingSpot._id,
         h: parkingSpotReserveDto.h,
         m: parkingSpotReserveDto.m,
       },
-    });
+      {
+        headers: {
+          accept: 'application/json',
+          'Api-Key': SIMULATION_BACKEND_API_KEY,
+        },
+      },
+    );
 
     if (res.status !== 200) {
       return false;
@@ -63,21 +65,31 @@ class ParkingSpotService {
 
   public async createParkingSpot(parkingSpotCreateDto: ParkingSpotCreateDto) {
     const url = new URL('./ParkingSpot', SIMULATION_BACKEND_API_URL).toString();
-    const res = await axios.post(url, {
-      headers: {
-        accept: 'application/json',
-        'Api-Key': SIMULATION_BACKEND_API_KEY,
-      },
-      data: {
+    const res = await axios.post(
+      url,
+      {
         latitude: parkingSpotCreateDto.latitude,
         longitude: parkingSpotCreateDto.longitude,
         parkingSpotZone: parkingSpotCreateDto.parkingSpotZone,
       },
-    });
+      {
+        headers: {
+          accept: 'application/json',
+          'Api-Key': SIMULATION_BACKEND_API_KEY,
+        },
+      },
+    );
     if (res.status !== 200) {
       return false;
     }
-    return this.parkingSpotsCollection.create(res.data);
+    return this.parkingSpotsCollection.create({
+      _id: res.data.id,
+      latitude: res.data.latitude,
+      longitude: res.data.longitude,
+      parkingSpotZone: res.data.parkingSpotZone,
+      occupied: res.data.occupied,
+      occupiedTimestamp: res.data.occupiedTimestamp,
+    });
   }
 }
 
