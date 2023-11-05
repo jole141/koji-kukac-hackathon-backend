@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import ParkingSpotService from '@services/parkingSpot.service';
-import { ParkingSpotReserveDto } from '@dtos/parkiongSpotReserve.dto';
+import { ParkingSpotReserveDto } from '@dtos/parkingSpotReserve.dto';
 import { ParkingSpotCreateDto } from '@dtos/parkingSpotCreate.dto';
 
 class ParkingSpotController {

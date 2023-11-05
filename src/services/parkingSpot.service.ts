@@ -2,7 +2,7 @@ import { ParkingSpotModel } from '@models/parkingSpot.model';
 
 import { IParkingSpot } from '@interfaces/parkingSpot.interface';
 import { ParkingClusterModel } from '@models/parkingCluster.model';
-import { ParkingSpotReserveDto } from '@dtos/parkiongSpotReserve.dto';
+import { ParkingSpotReserveDto } from '@dtos/parkingSpotReserve.dto';
 import axios from 'axios';
 import { SIMULATION_BACKEND_API_URL, SIMULATION_BACKEND_API_KEY } from '@config';
 import { ParkingSpotCreateDto } from '@dtos/parkingSpotCreate.dto';
