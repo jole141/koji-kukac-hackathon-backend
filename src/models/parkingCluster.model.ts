@@ -24,6 +24,22 @@ const parkingClusterModelSchema: Schema = new Schema({
   pricePerHour: {
     type: Number,
   },
+  dynamicPricing: {
+    type: Boolean,
+    default: false,
+  },
+  priceIncreaseThreshold: {
+    type: Number,
+    default: 0.7,
+  },
+  priceIncreaseAmount: {
+    type: Number,
+    default: 0.2,
+  },
+  priceIncreaseInterval: {
+    type: Number,
+    default: 0.1,
+  },
   parkingSpots: [{ type: parkingSpotModelSchema }],
   occupancy: [
     {
