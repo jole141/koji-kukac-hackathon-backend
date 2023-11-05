@@ -137,10 +137,10 @@ class ParkingClusterService {
       if (parkingSpot.cluster !== undefined) {
         continue;
       }
-      //const address = await getAddressFromLongLat(parkingSpot.longitude, parkingSpot.latitude);
+      const address = await getAddressFromLongLat(parkingSpot.longitude, parkingSpot.latitude);
       const parkingCluster = {
         name: `Parking cluster ${parkingClustersNumber++}`,
-        address: 'address',
+        address: address,
         latitude: parkingSpot.latitude,
         longitude: parkingSpot.longitude,
         parkingClusterZone: parkingSpot.parkingSpotZone,
