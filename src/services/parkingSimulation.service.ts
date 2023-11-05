@@ -46,14 +46,14 @@ class ParkingSimulationService {
       });
       const data = await this.parkingSpotsCollection.findById(parkingSpotEventDto._id);
       const clusterID = data.cluster;
-      await this.parkingClustersCollection.findByIdAndUpdate(clusterID, {
-        $set: {
-          parkingSpots: {
-            _id: parkingSpotEventDto._id,
-            isOccupied: parkingSpotEventDto.isOccupied,
+      await this.parkingClustersCollection.updateOne(
+        { _id: clusterID, 'parkingSpots._id': parkingSpotEventDto._id },
+        {
+          $set: {
+            'parkingSpots.$.isOccupied': parkingSpotEventDto.isOccupied,
           },
         },
-      });
+      );
       const eventTime = parkingSpotEventDto.time.split(':');
       const eventDate = new Date(2023, 0, 1, 1, 0, 0, 0);
       const offset = customDataDateOffset();
